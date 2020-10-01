@@ -54,12 +54,17 @@ def newAnalyzer():
     Retorna el analizador inicializado.
     """
     analyzer = {'crimes': None,
-                'dateIndex': None
+                'dateIndex': None,
+                'ID': None,
+                'severity':None
                 }
 
-    analyzer['crimes'] = lt.newList('SINGLE_LINKED', compareIds)
+    analyzer['crime'] = lt.newList('SINGLE_LINKED', compareIds)
+    analyzer['ID'] = lt.newList('SINGLE_LINKED', compareIds)
     analyzer['dateIndex'] = om.newMap(omaptype='RBT',
                                       comparefunction=compareDates)
+    analyzer['severity'] = om.newMap(omaptype='RBT',
+                                      comparefunction=compareseverity)                                                                        
     return analyzer
 
 
@@ -69,10 +74,23 @@ def newAnalyzer():
 def addCrime(analyzer, crime):
     """
     """
-    lt.addLast(analyzer['crimes'], crime)
+    lt.addLast(analyzer['crime'], crime)
     updateDateIndex(analyzer['dateIndex'], crime)
     return analyzer
 
+def addID(analyzer, id):
+    """
+    """
+    lt.addLast(analyzer['ID'], id)
+    updateDateIndex(analyzer['Start_Time'], id)
+    return analyzer
+
+def addID(analyzer, severity):
+    """
+    """
+    lt.addLast(analyzer['severity'], severity)
+    updateDateIndex(analyzer['Start_Time'], severity)
+    return analyzer
 
 def updateDateIndex(map, crime):
     """
@@ -94,6 +112,18 @@ def updateDateIndex(map, crime):
     addDateIndex(datentry, crime)
     return map
 
+def updateDateIndex(map, accidents):
+ 
+    starTime = accidents['Start_Time']
+    accidentsdate = datetime.datetime.strptime(starTime, '%Y-%m-%d %H:%M:%S')
+    entry = om.get(map, accidentsdate.date())
+    if entry is None:
+        datentry = newDataEntry(accidents)
+        om.put(map, accidentsdate.date(), datentry)
+    else:
+        datentry = me.getValue(entry)
+    addDateIndex(datentry, accidents)
+    return map
 
 def addDateIndex(datentry, crime):
     """
@@ -115,6 +145,25 @@ def addDateIndex(datentry, crime):
         lt.addLast(entry['lstoffenses'], crime)
     return datentry
 
+def addDateIndex(datentry, accidents):
+    """
+    Actualiza un indice de tipo de crimenes.  Este indice tiene una lista
+    de crimenes y una tabla de hash cuya llave es el tipo de crimen y
+    el valor es una lista con los crimenes de dicho tipo en la fecha que
+    se está consultando (dada por el nodo del arbol)
+    """
+    lst = datentry['lstcrimes']
+    lt.addLast(lst, crime)
+    offenseIndex = datentry['offenseIndex']
+    offentry = m.get(offenseIndex, crime['OFFENSE_CODE_GROUP'])
+    if (offentry is None):
+        entry = newOffenseEntry(crime['OFFENSE_CODE_GROUP'], crime)
+        lt.addLast(entry['lstoffenses'], crime)
+        m.put(offenseIndex, crime['OFFENSE_CODE_GROUP'], entry)
+    else:
+        entry = me.getValue(offentry)
+        lt.addLast(entry['lstoffenses'], crime)
+    return datentry
 
 def newDataEntry(crime):
     """
@@ -205,6 +254,18 @@ def getCrimesByRangeCode(analyzer, initialDate, offensecode):
         if numoffenses is not None:
             return m.size(me.getValue(numoffenses)['lstoffenses'])
         return 0
+
+def getAccidentsByseverity(analyzer,initialDate):
+    lst = om.values(analyzer['dateIndex'], initialDate)
+    lstiterator=it.newIterator(lst)
+    crimes={}
+    while (it.hasNext(lstiterator)):
+        lstdate = it.next(lstiterator)
+        totcrimes += lt.size(lstdate['lstcrimes'])
+    return crimes
+
+
+
 
 
 # ==============================

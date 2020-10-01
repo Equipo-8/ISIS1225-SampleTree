@@ -52,6 +52,12 @@ def printMenu():
     print("2- Cargar información de crimenes")
     print("3- Consultar crimenes en un rango de fechas")
     print("4- Consultar crimenes por codigo y fecha")
+    print("5- Consultar los accidentes en una fecha")
+    print("6- Consultar los accidentes anteriores auna fecha")
+    print("7- Consultar los accidentes en un rango de fecha")
+    print("8- Consultar el estado con más accidentes")
+    print("9- Consultar los accidentes por rango de hora")
+
     print("0- Salir")
     print("*******************************************")
 
@@ -92,7 +98,14 @@ while True:
                                                       offensecode)
         print("\nTotal de ofensas tipo: " + offensecode + " en esa fecha:  " +
               str(numoffenses))
-
+    
+    elif int(inputs[0]) == 5:
+         print("\nBuscando accidentes en una fecha: ")
+         initialDate= input("Fecha a buscar(YYYY-MM-DD): ")
+         accidentes=controller.getCrimesByDate(cont,initialDate)
+         print("\nAccidentes por severidad son: "+ accidentes+" en la fecha: "+
+                str(initialDate))
+ 
     else:
         sys.exit(0)
 sys.exit(0)

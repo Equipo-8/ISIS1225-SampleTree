@@ -122,3 +122,11 @@ def getCrimesByRangeCode(analyzer, initialDate,
     initialDate = datetime.datetime.strptime(initialDate, '%Y-%m-%d')
     return model.getCrimesByRangeCode(analyzer, initialDate.date(),
                                       offensecode)
+
+def getCrimesByDate(analyzar,initialDate):
+    
+    initialDate= datetime.datetime.strptime(initialDate,'%Y-%m-%d' )
+    return model.getCrimesByDate(analyzer,initialDate.date())
+
+
+
