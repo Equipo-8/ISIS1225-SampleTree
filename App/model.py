@@ -146,26 +146,21 @@ def addDateIndex(datentry, crime):
     return datentry
 
 def addDateIndex(datentry, accidents):
-    """
-    Actualiza un indice de tipo de crimenes.  Este indice tiene una lista
-    de crimenes y una tabla de hash cuya llave es el tipo de crimen y
-    el valor es una lista con los crimenes de dicho tipo en la fecha que
-    se está consultando (dada por el nodo del arbol)
-    """
-    lst = datentry['lstcrimes']
-    lt.addLast(lst, crime)
-    offenseIndex = datentry['offenseIndex']
-    offentry = m.get(offenseIndex, crime['OFFENSE_CODE_GROUP'])
+
+    lst = datentry['lstaccidents']
+    lt.addLast(lst, accidents)
+    severityIndex = datentry['severityIndex']
+    offentry = m.get(severityIndex, accidents['Severity'])
     if (offentry is None):
-        entry = newOffenseEntry(crime['OFFENSE_CODE_GROUP'], crime)
-        lt.addLast(entry['lstoffenses'], crime)
-        m.put(offenseIndex, crime['OFFENSE_CODE_GROUP'], entry)
+        entry = newseverityEntry(accidents['Severity'], accidents)
+        lt.addLast(entry['lstseverity'], accidents)
+        m.put(severityIndex, accidents['Severity'], entry)
     else:
         entry = me.getValue(offentry)
-        lt.addLast(entry['lstoffenses'], crime)
+        lt.addLast(entry['lstseveritys'], accidents)
     return datentry
 
-def newDataEntry(crime):
+def newDataEntry(accidents):
     """
     Crea una entrada en el indice por fechas, es decir en el arbol
     binario.
@@ -187,6 +182,11 @@ def newOffenseEntry(offensegrp, crime):
     ofentry['offense'] = offensegrp
     ofentry['lstoffenses'] = lt.newList('SINGLELINKED', compareOffenses)
     return ofentry
+
+def newseverityEntry(severity,accidents):
+
+    severity={"severity":None,"lstseverity":None,}
+
 
 
 # ==============================
@@ -256,13 +256,13 @@ def getCrimesByRangeCode(analyzer, initialDate, offensecode):
         return 0
 
 def getAccidentsByseverity(analyzer,initialDate):
-    lst = om.values(analyzer['dateIndex'], initialDate)
+    lst = om.values(analyzer['severity'], initialDate)
     lstiterator=it.newIterator(lst)
-    crimes={}
+    accidents={}
     while (it.hasNext(lstiterator)):
         lstdate = it.next(lstiterator)
-        totcrimes += lt.size(lstdate['lstcrimes'])
-    return crimes
+        accidents += lt.size(lstdate['lstaccidents'])
+    return accidents
 
 
 
@@ -305,6 +305,18 @@ def compareOffenses(offense1, offense2):
     if (offense1 == offense):
         return 0
     elif (offense1 > offense):
+        return 1
+    else:
+        return -1
+
+def compareseverity(severity1, severity2):
+    """
+    Compara dos tipos de crimenes
+    """
+    offense = me.getKey(severity2)
+    if (severity1 == offense):
+        return 0
+    elif (severity1 > offense):
         return 1
     else:
         return -1
